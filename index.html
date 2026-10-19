@@ -464,7 +464,8 @@
                         <label class="block text-xs font-semibold text-gold mb-1">奉納者署名</label>
                         <input id="ema-author" type="text" maxlength="12" placeholder="無名氏" class="w-full bg-stone-800 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-100 focus:outline-none focus:border-gold">
                     </div>
-                    <button id="btn-submit-ema" class="w-full py-2.5 bg-gradient-to-r from-vermilion to-red-700 text-gold font-bold rounded-xl border border-gold shadow-lg hover:from-red-600 transition">
+                    <!-- 加上 type="button" 確保點擊時不會被表單行為干擾 -->
+                    <button type="button" id="btn-submit-ema" class="w-full py-2.5 bg-gradient-to-r from-vermilion to-red-700 text-gold font-bold rounded-xl border border-gold shadow-lg hover:from-red-600 transition">
                         奉納至全球願望牆 (雲端同步)
                     </button>
                 </div>
@@ -832,31 +833,37 @@
             document.getElementById('preview-author').innerText = `奉納者：${author}`;
         }
 
-        // 提交繪馬至 Firebase (已加入自動跳轉祈願牆邏輯)
+        // 提交繪馬至 Firebase (強制關閉寫繪馬視窗並開啟祈願牆)
         async function submitEmaToCloud() {
             const cat = document.getElementById('ema-category').value;
             const wish = document.getElementById('ema-text').value || '平安喜樂';
             const author = document.getElementById('ema-author').value || '無名氏';
             const today = new Date().toISOString().split('T')[0];
 
-            const newDocRef = doc(emasColRef);
-            await setDoc(newDocRef, {
-                category: cat,
-                wish: wish,
-                author: author,
-                date: today,
-                blessCount: 0,
-                createdAt: Date.now()
-            });
+            try {
+                const newDocRef = doc(emasColRef);
+                await setDoc(newDocRef, {
+                    category: cat,
+                    wish: wish,
+                    author: author,
+                    date: today,
+                    blessCount: 0,
+                    createdAt: Date.now()
+                });
+            } catch (e) {
+                console.warn("Upload Ema Error:", e);
+            }
 
-            // 1. 關閉撰寫繪馬的視窗
-            closeModal('modal-ema');
+            // 1. 強制隱藏繪馬撰寫視窗
+            const emaModal = document.getElementById('modal-ema');
+            emaModal.classList.add('hidden');
             
-            // 2. 重新整理繪馬牆格子的資料
+            // 2. 重新渲染繪馬牆資料
             renderEmaGrid();
             
-            // 3. 自動開啟「全球網友祈願繪馬牆」視窗，實現平順跳轉
-            document.getElementById('modal-wall').classList.remove('hidden');
+            // 3. 強制顯示全網祈願繪馬牆視窗
+            const wallModal = document.getElementById('modal-wall');
+            wallModal.classList.remove('hidden');
         }
 
         // 渲染網友共享繪馬牆
