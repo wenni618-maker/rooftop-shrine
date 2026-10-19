@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台南林百貨頂樓神社 - 祈願參拜所</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700;900&family=Zen+Brush&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        vermilion: '#C1121F',
+                        shrineRed: '#8B0000',
+                        toriiStone: '#8C857B',
+                        brickRed: '#B84A39',
+                        gold: '#E5C158',
+                        amberWood: '#3D2314',
+                        paper: '#FDFBF7'
+                    },
+                    fontFamily: {
+                        serifJP: ['"Noto Serif JP"', 'serif'],
+                        brush: ['"Zen Brush"', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Noto Serif JP', serif;
+            background-color: #0d0a07;
+            color: #fdfbf7;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        #sakura-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .stone-texture {
+            background-color: #7d766d;
+            background-image: radial-gradient(#4a443c 1.5px, transparent 1.5px), radial-gradient(#a39c93 1px, #7d766d 1px);
+            background-size: 12px 12px, 6px 6px;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
+        }
+
+        .brick-floor {
+            background-color: #a84232;
+            background-image: 
+                linear-gradient(335deg, rgba(0,0,0,0.3) 0px, transparent 2px),
+                linear-gradient(155deg, rgba(255,255,255,0.15) 0px, transparent 2px),
+                linear-gradient(90deg, #8a3325 2px, transparent 2px),
+                linear-gradient(0deg, #8a3325 2px, transparent 2px);
+            background-size: 40px 20px, 40px 20px, 40px 20px, 40px 20px;
+        }
+
+        .wood-saisen {
+            background: linear-gradient(180deg, #4a2818 0%, #2e170d 60%, #1c0d07 100%);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -10px 20px rgba(0,0,0,0.8), 0 15px 25px rgba(0,0,0,0.8);
+        }
+        .wood-ema {
+            background: linear-gradient(135deg, #e4bf8f 0%, #d1a36a 50%, #b08249 100%);
+            box-shadow: inset 0 0 15px rgba(139, 90, 43, 0.4), 0 8px 16px rgba(0,0,0,0.5);
+        }
+
+        .hemp-rope-braided {
+            width: 26px;
+            background: repeating-linear-gradient(
+                45deg,
+                #c1121f 0px,
+                #c1121f 12px,
+                #fdfbf7 12px,
+                #fdfbf7 24px,
+                #d8be92 24px,
+                #d8be92 32px
+            );
+            border-x: 2px solid #5a1900;
+            box-shadow: inset -4px 0 8px rgba(0,0,0,0.5), inset 3px 0 6px rgba(255,255,255,0.4), 3px 10px 18px rgba(0,0,0,0.7);
+            border-radius: 4px;
+        }
+
+        .rope-tassel-fancy {
+            width: 48px;
+            height: 68px;
+            background: linear-gradient(180deg, #8b0000 0%, #c1121f 25%, #d8be92 50%, #8c7147 100%);
+            clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+            border-top: 5px solid #3d2314;
+            box-shadow: 0 10px 16px rgba(0,0,0,0.7);
+        }
+
+        .bell-rope-group {
+            transform-origin: top center;
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .bell-locked {
+            pointer-events: none !important;
+            cursor: not-allowed !important;
+            opacity: 0.85;
+            filter: grayscale(0.15);
+        }
+
+        .bell-unlocked {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+            opacity: 1;
+            filter: brightness(1.1) drop-shadow(0 0 20px rgba(229, 193, 88, 0.8));
+        }
+
+        .shake-heavy {
+            animation: bellSwingRealistic 1.2s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes bellSwingRealistic {
+            0% { transform: rotate(0deg); }
+            15% { transform: rotate(-16deg); }
+            30% { transform: rotate(14deg); }
+            45% { transform: rotate(-10deg); }
+            60% { transform: rotate(7deg); }
+            75% { transform: rotate(-3deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .ema-shape {
+            clip-path: polygon(50% 0%, 100% 22%, 100% 100%, 0% 100%, 0% 22%);
+        }
+
+        .coin-3d {
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.5), 0 6px 12px rgba(0,0,0,0.6);
+            transition: all 0.2s ease;
+        }
+        .coin-5 { background: radial-gradient(circle at 30% 30%, #ffe875, #b8860b); border: 2px solid #e5c158; color: #4a2d00; }
+        .coin-50 { background: radial-gradient(circle at 30% 30%, #ffffff, #888888); border: 2px solid #ffffff; color: #222; }
+        .coin-100 { background: radial-gradient(circle at 30% 30%, #ffffff, #a0a0a0); border: 2px solid #ddd; color: #111; }
+        .coin-500 { background: radial-gradient(circle at 30% 30%, #fff6c0, #c5a059); border: 2px solid #f3e5ab; color: #3d2b00; }
+
+        @keyframes tossCoinAnim {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: translate(var(--tw-toss-x, 0px), -130px) scale(0.85) rotate(360deg); opacity: 0.95; }
+            100% { transform: translate(var(--tw-toss-x, 0px), 90px) scale(0.3) rotate(720deg); opacity: 0; }
+        }
+        .animate-toss-coin { animation: tossCoinAnim 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+
+        .washi-texture {
+            background-color: #fcf8f2;
+            background-image: radial-gradient(#e5d7c3 0.8px, transparent 0.8px);
+            background-size: 10px 10px;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative bg-neutral-950 text-stone-100">
+
+    <canvas id="sakura-canvas"></canvas>
+
+    <header class="relative z-30 w-full px-4 py-3 flex justify-between items-center bg-black/80 backdrop-blur-md border-b border-gold/30">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-vermilion flex items-center justify-center text-gold border border-gold font-bold text-xl shadow-lg">
+                ⛩
+            </div>
+            <div>
+                <h1 class="text-lg md:text-xl font-bold tracking-widest text-gold font-serifJP">台南林百貨頂樓神社</h1>
+                <p class="text-[10px] text-stone-400 tracking-wider">HAYASHI ROOFTOP SHRINE • 祈願參拜所</p>
+            </div>
+        </div>
+
+        <div class="hidden md:flex items-center gap-5 text-xs bg-stone-900/90 px-4 py-1.5 rounded-full border border-gold/30">
+            <div class="flex items-center gap-1.5 text-amber-200">
+                <i class="fa-solid fa-coins text-gold"></i>
+                <span>累積賽錢：<strong id="stat-saisen" class="text-gold font-bold">0</strong> 円</span>
+            </div>
+            <div class="h-3 w-px bg-stone-700"></div>
+            <div class="flex items-center gap-1.5 text-amber-200">
+                <i class="fa-solid fa-scroll text-gold"></i>
+                <span>共享繪馬：<strong id="stat-emas-count" class="text-gold font-bold">0</strong> 枚</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button type="button" id="btn-omikuji" class="px-3 py-1.5 bg-vermilion/90 hover:bg-vermilion border border-gold/50 text-xs md:text-sm rounded-full transition flex items-center gap-1 shadow hover:scale-105 cursor-pointer">
+                <i class="fa-solid fa-box-archive text-gold"></i> 抽神籤
+            </button>
+            <button type="button" id="btn-view-wall" class="px-3 py-1.5 bg-amberWood border border-gold/50 text-xs md:text-sm text-gold rounded-full transition flex items-center gap-1 shadow hover:bg-stone-800 hover:scale-105 cursor-pointer">
+                <i class="fa-solid fa-torii-gate"></i> 網友祈願牆
+            </button>
+            <button type="button" id="btn-audio-toggle" class="w-8 h-8 rounded-full bg-stone-800 border border-stone-600 flex items-center justify-center text-gold hover:bg-stone-700 transition cursor-pointer">
+                <i id="audio-icon" class="fa-solid fa-volume-high"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="relative z-10 flex-1 flex flex-col items-center justify-center px-2 py-4">
+        
+        <div class="relative w-full max-w-4xl flex flex-col items-center">
+            
+            <div class="w-full relative rounded-2xl overflow-hidden border-2 border-stone-800 bg-gradient-to-b from-sky-950/50 via-stone-900 to-black shadow-2xl flex flex-col items-center pt-8 pb-6 px-4">
+                
+                <div class="w-full max-w-xl relative flex flex-col items-center mb-2 z-20 pointer-events-none drop-shadow-2xl">
+                    <div class="w-[108%] h-6 bg-gradient-to-r from-vermilion via-red-600 to-vermilion rounded-t-xl border-t-2 border-b-4 border-black flex justify-between items-center px-2 shadow-2xl relative">
+                        <div class="w-4 h-full bg-black rounded-l-md"></div>
+                        <div class="w-4 h-full bg-black rounded-r-md"></div>
+                    </div>
+                    <div class="w-[94%] h-4 bg-vermilion border-y-2 border-black -mt-1 flex justify-center items-center relative shadow-md">
+                        <div class="absolute -top-3 w-12 h-10 bg-amber-950 border-2 border-gold rounded flex items-center justify-center shadow-2xl z-30 pointer-events-auto">
+                            <span class="text-gold font-bold text-[10px] tracking-widest font-serifJP writing-vertical">末廣社</span>
+                        </div>
+                    </div>
+                    <div class="w-[88%] flex justify-between absolute top-7 inset-x-auto h-72 z-10">
+                        <div class="w-5 h-full bg-gradient-to-b from-vermilion via-red-700 to-black border-x-2 border-stone-900 shadow-2xl flex flex-col justify-end">
+                            <div class="w-full h-6 bg-black border-t border-stone-700"></div>
+                        </div>
+                        <div class="w-5 h-full bg-gradient-to-b from-vermilion via-red-700 to-black border-x-2 border-stone-900 shadow-2xl flex flex-col justify-end">
+                            <div class="w-full h-6 bg-black border-t border-stone-700"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="step-indicator" class="mt-4 mb-3 text-center z-20">
+                    <div id="step-badge" class="inline-flex items-center gap-1.5 px-3 py-1 bg-gold/20 text-gold border border-gold/40 rounded-full text-xs font-semibold tracking-wider">
+                        <i id="step-badge-icon" class="fa-solid fa-coins"></i>
+                        <span id="step-badge-text">步驟 1 / 4：奉納賽錢 (請選擇硬幣投幣)</span>
+                    </div>
+                    <h2 id="step-title" class="text-2xl md:text-3xl font-bold mt-1 text-stone-100 tracking-wider font-serifJP">
+                        投幣賽錢 (賽銭奉納)
+                    </h2>
+                    <p id="step-desc" class="text-xs text-stone-400 mt-0.5">
+                        參拜第一步：投幣入賽錢箱，即可開啟搖晃本坪神鈴
+                    </p>
+                </div>
+
+                <div class="w-full max-w-2xl bg-vermilion/90 border-t-8 border-amber-950 border-x-4 border-shrineRed rounded-t-xl p-4 flex flex-col items-center relative shadow-2xl z-20">
+                    
+                    <div class="w-full h-8 bg-shrineRed border-b-2 border-amber-950 flex items-center justify-center relative shadow">
+                        <div class="w-8 h-8 rounded-full bg-amber-950 border border-gold flex items-center justify-center text-gold text-xs font-bold shadow">🌸</div>
+                    </div>
+
+                    <div class="w-full h-12 bg-stone-100/95 border-b-2 border-stone-300 flex justify-around items-end pb-1 shadow-md opacity-90">
+                        <div class="w-1/3 h-full border-r border-stone-300 rounded-b-3xl bg-stone-50"></div>
+                        <div class="w-1/3 h-full border-r border-stone-300 rounded-b-3xl bg-stone-50"></div>
+                        <div class="w-1/3 h-full rounded-b-3xl bg-stone-50"></div>
+                    </div>
+
+                    <div id="bell-interactive-area" class="relative z-30 flex flex-col items-center my-1">
+                        <div id="bell-prompt-badge" class="mb-2 bg-gradient-to-r from-amber-400 via-yellow-200 to-gold text-amber-950 text-xs md:text-sm font-black px-4 py-1 rounded-full border-2 border-amber-900 shadow-2xl flex items-center gap-1.5 animate-pulse cursor-pointer">
+                            <i class="fa-solid fa-hand-pointer text-amber-900"></i>
+                            <span>點擊搖鈴 (鈴鳴らし)</span>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <div class="w-1.5 h-6 bg-stone-400 border-x border-stone-700"></div>
+                            <div class="w-1.5 h-6 bg-stone-400 border-x border-stone-700"></div>
+                        </div>
+                        <div class="w-8 h-3 bg-amber-700 rounded-t-md border border-amber-950"></div>
+
+                        <div id="bell-rope-group" class="bell-rope-group bell-locked flex flex-col items-center relative">
+                            <div class="w-32 h-32 relative drop-shadow-2xl">
+                                <svg viewBox="0 0 120 120" class="w-full h-full">
+                                    <defs>
+                                        <radialGradient id="brassGlow" cx="35%" cy="30%" r="65%">
+                                            <stop offset="0%" stop-color="#fff9d6"/>
+                                            <stop offset="25%" stop-color="#f5d061"/>
+                                            <stop offset="60%" stop-color="#b8860b"/>
+                                            <stop offset="90%" stop-color="#664600"/>
+                                            <stop offset="100%" stop-color="#2d1d00"/>
+                                        </radialGradient>
+                                        <linearGradient id="ringGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                            <stop offset="0%" stop-color="#ffec99"/>
+                                            <stop offset="50%" stop-color="#c99718"/>
+                                            <stop offset="100%" stop-color="#4a3300"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <rect x="52" y="2" width="16" height="12" rx="3" fill="url(#ringGrad)" stroke="#3a2500" stroke-width="1.5"/>
+                                    <circle cx="60" cy="58" r="46" fill="url(#brassGlow)" stroke="#3a2500" stroke-width="2"/>
+                                    <rect x="8" y="52" width="104" height="14" rx="7" fill="url(#ringGrad)" stroke="#2d1d00" stroke-width="1.5"/>
+                                    <ellipse cx="60" cy="88" rx="12" ry="6" fill="#120a00" stroke="#785400" stroke-width="1.5"/>
+                                    <path d="M 18 64 Q 60 76 102 64" fill="none" stroke="#3a2500" stroke-width="2"/>
+                                    <ellipse cx="45" cy="38" rx="12" ry="6" fill="#ffffff" opacity="0.4" transform="rotate(-20 45 38)"/>
+                                </svg>
+                            </div>
+                            <div class="hemp-rope-braided h-40 md:h-48 -mt-2"></div>
+                            <div class="w-8 h-5 bg-amber-900 border border-amber-950 rounded-t-sm shadow-md"></div>
+                            <div class="rope-tassel-fancy"></div>
+                        </div>
+                    </div>
+
+                    <div id="saisen-box" class="relative w-72 md:w-96 h-36 md:h-44 wood-saisen border-4 border-amber-950 rounded-xl shadow-2xl flex flex-col items-center justify-between p-3 z-30 my-2">
+                        <div class="w-full h-8 bg-amber-950/90 rounded-md border-b-2 border-amber-900 flex justify-around items-center px-3 relative shadow-inner">
+                            <div class="w-2 h-full bg-amber-900 border-x border-black"></div>
+                            <div class="w-2 h-full bg-amber-900 border-x border-black"></div>
+                            <div class="w-2 h-full bg-amber-900 border-x border-black"></div>
+                            <div class="w-2 h-full bg-amber-900 border-x border-black"></div>
+                            <div class="w-2 h-full bg-amber-900 border-x border-black"></div>
+                        </div>
+                        <div id="coin-fly-container" class="absolute inset-0 pointer-events-none z-40 flex items-center justify-center"></div>
+                        <div class="my-auto px-6 py-1 bg-amber-950/90 border-2 border-gold/70 rounded shadow-md flex items-center gap-2">
+                            <div class="text-gold font-black tracking-[0.3em] text-xl font-serifJP drop-shadow">賽 錢 箱</div>
+                        </div>
+                        <div class="text-[10px] text-amber-200/80 font-serifJP">五円 (ご縁) 象徵結緣與祝福</div>
+                    </div>
+                </div>
+
+                <div class="w-full h-16 brick-floor border-t-4 border-stone-800 rounded-b-xl flex justify-between items-center px-6 relative z-10">
+                    <div class="w-10 h-14 stone-texture border border-stone-900 rounded-t-lg flex flex-col items-center justify-between p-1 shadow-lg">
+                        <div class="w-6 h-2 bg-stone-800 rounded"></div>
+                        <div class="w-4 h-4 bg-amber-300/80 rounded-full blur-[1px]"></div>
+                        <div class="w-8 h-2 bg-stone-800"></div>
+                    </div>
+                    <div class="w-10 h-14 stone-texture border border-stone-900 rounded-t-lg flex flex-col items-center justify-between p-1 shadow-lg">
+                        <div class="w-6 h-2 bg-stone-800 rounded"></div>
+                        <div class="w-4 h-4 bg-amber-300/80 rounded-full blur-[1px]"></div>
+                        <div class="w-8 h-2 bg-stone-800"></div>
+                    </div>
+                </div>
+
+                <div id="interaction-panel" class="mt-6 w-full max-w-lg z-30 flex flex-col items-center">
+                    <div id="panel-step-1" class="w-full">
+                        <div class="grid grid-cols-4 gap-3 w-full">
+                            <button type="button" id="coin-5-btn" class="flex flex-col items-center group cursor-pointer">
+                                <div class="w-14 h-14 coin-3d coin-5 text-sm group-hover:scale-110">5円</div>
+                                <span class="text-[10px] text-amber-300 mt-1 font-semibold">御緣 (良緣)</span>
+                            </button>
+                            <button type="button" id="coin-50-btn" class="flex flex-col items-center group cursor-pointer">
+                                <div class="w-14 h-14 coin-3d coin-50 text-sm group-hover:scale-110">50円</div>
+                                <span class="text-[10px] text-stone-300 mt-1 font-semibold">五重緣分</span>
+                            </button>
+                            <button type="button" id="coin-100-btn" class="flex flex-col items-center group cursor-pointer">
+                                <div class="w-14 h-14 coin-3d coin-100 text-sm group-hover:scale-110">100円</div>
+                                <span class="text-[10px] text-stone-200 mt-1 font-semibold">百倍圓滿</span>
+                            </button>
+                            <button type="button" id="coin-500-btn" class="flex flex-col items-center group cursor-pointer">
+                                <div class="w-14 h-14 coin-3d coin-500 text-sm group-hover:scale-110">500円</div>
+                                <span class="text-[10px] text-gold mt-1 font-semibold">大吉大利</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="panel-step-2" class="hidden text-center">
+                        <p class="text-sm text-gold mb-3 animate-pulse font-bold">✨ 賽錢已奉納！請點擊上方神鈴搖響參拜</p>
+                        <button type="button" id="btn-manual-ring" class="px-8 py-3 bg-gradient-to-r from-vermilion to-red-700 hover:from-red-600 text-gold font-bold rounded-full border-2 border-gold shadow-xl transition flex items-center justify-center gap-2 mx-auto hover:scale-105 cursor-pointer">
+                            <i class="fa-solid fa-bell text-lg"></i> 搖響神鈴 (鈴鳴らし)
+                        </button>
+                    </div>
+
+                    <div id="panel-step-3" class="hidden w-full text-center">
+                        <div class="p-3 bg-black/70 rounded-xl border border-gold/30 mb-3 flex justify-around items-center">
+                            <div id="worship-bow-1" class="opacity-30 transition-all flex flex-col items-center"><span class="text-xl">🙇‍♂</span><span class="text-[10px] text-gold">一禮</span></div>
+                            <div id="worship-bow-2" class="opacity-30 transition-all flex flex-col items-center"><span class="text-xl">🙇‍♂️</span><span class="text-[10px] text-gold">二禮</span></div>
+                            <div id="worship-clap-1" class="opacity-30 transition-all flex flex-col items-center"><span class="text-xl">👏</span><span class="text-[10px] text-gold">一拍手</span></div>
+                            <div id="worship-clap-2" class="opacity-30 transition-all flex flex-col items-center"><span class="text-xl">👏</span><span class="text-[10px] text-gold">二拍手</span></div>
+                            <div id="worship-bow-3" class="opacity-30 transition-all flex flex-col items-center"><span class="text-xl">🙇‍♂️</span><span class="text-[10px] text-gold">再一禮</span></div>
+                        </div>
+                        <button type="button" id="btn-start-worship" class="px-8 py-2.5 bg-gradient-to-r from-vermilion to-red-700 hover:from-red-600 text-gold font-bold text-sm rounded-full border border-gold shadow-xl cursor-pointer">
+                            進行二禮二拍手參拜
+                        </button>
+                    </div>
+
+                    <div id="panel-step-4" class="hidden text-center">
+                        <button type="button" id="btn-open-ema-modal" class="px-8 py-3 bg-gradient-to-r from-amber-600 to-amber-800 text-gold font-bold text-base rounded-full border-2 border-gold shadow-2xl hover:scale-105 animate-bounce cursor-pointer">
+                            ✍️ 撰寫祈福繪馬 (本地同步)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: 撰寫繪馬 -->
+    <div id="modal-ema" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="bg-stone-900 border-2 border-gold rounded-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl">
+            <button type="button" id="close-modal-ema" class="absolute top-4 right-4 text-stone-400 hover:text-white text-xl cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-2xl font-bold text-gold text-center mb-1 font-serifJP">奉納心願繪馬</h3>
+            <p class="text-xs text-stone-400 text-center mb-6">您的祈願將即時儲存展示，所有人均可為您點讚打氣</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div class="flex flex-col items-center">
+                    <p class="text-xs text-gold mb-2">繪馬預覽</p>
+                    <div id="ema-preview" class="w-64 h-44 wood-ema ema-shape relative p-4 flex flex-col justify-between items-center text-stone-900 shadow-2xl border-t-4 border-amber-950">
+                        <div class="w-3.5 h-3.5 rounded-full bg-stone-900 border border-gold absolute top-2 left-1/2 -translate-x-1/2"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-black/10 text-7xl pointer-events-none">🌸</div>
+                        <div id="preview-category" class="mt-4 px-2 py-0.5 bg-vermilion text-gold text-[10px] font-bold rounded shadow">🌸 良緣祈願</div>
+                        <div id="preview-wish" class="text-center font-bold text-sm my-auto px-2 break-all text-amber-950 font-serifJP leading-snug">願平安喜樂，萬事順心。</div>
+                        <div class="w-full flex justify-between items-end text-[10px] text-amber-950 font-bold z-10">
+                            <span id="preview-author">奉納者：無名氏</span>
+                            <div class="w-6 h-6 border-2 border-vermilion text-vermilion rounded flex items-center justify-center text-[8px] font-bold">祈願</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3 text-left">
+                    <div>
+                        <label class="block text-xs font-semibold text-gold mb-1">祈願類別</label>
+                        <select id="ema-category" class="w-full bg-stone-800 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-100 focus:outline-none focus:border-gold">
+                            <option value="🌸 良緣祈願">🌸 良緣祈願 (戀愛與人緣)</option>
+                            <option value="📚 學業成就">📚 學業成就 (考試合格)</option>
+                            <option value="🌿 身體健康">🌿 身體健康 (無病息災)</option>
+                            <option value="💼 事業興旺">💼 事業興旺 (商賣繁盛)</option>
+                            <option value="💰 金運招福">💰 金運招福 (財運亨通)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gold mb-1">心願內容 (40字以內)</label>
+                        <textarea id="ema-text" maxlength="40" rows="3" placeholder="誠心寫下您的心願..." class="w-full bg-stone-800 border border-stone-700 rounded p-2 text-sm text-stone-100 focus:outline-none focus:border-gold resize-none">願平安喜樂，萬事順心。</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gold mb-1">奉納者署名</label>
+                        <input id="ema-author" type="text" maxlength="12" placeholder="無名氏" class="w-full bg-stone-800 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-100 focus:outline-none focus:border-gold">
+                    </div>
+                    <button type="button" id="btn-submit-ema" class="w-full py-2.5 bg-gradient-to-r from-vermilion to-red-700 text-gold font-bold rounded-xl border border-gold shadow-lg hover:from-red-600 transition cursor-pointer">
+                        奉納至祈願牆 (本地同步)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: 網友共享繪馬願望牆 -->
+    <div id="modal-wall" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="bg-stone-900 border-2 border-gold rounded-2xl max-w-5xl w-full p-6 relative h-[85vh] flex flex-col shadow-2xl">
+            <button type="button" id="close-modal-wall" class="absolute top-4 right-4 text-stone-400 hover:text-white text-xl z-10 cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center mb-3">
+                <h3 class="text-2xl font-bold text-gold font-serifJP">祈願繪馬牆</h3>
+                <p class="text-xs text-stone-400">所有心願已保存，您可以點擊「🙏 祝福」幫忙打氣！</p>
+            </div>
+
+            <div id="ema-grid" class="flex-1 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2 no-scrollbar">
+                <!-- 繪馬動態渲染處 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: 御神籤 -->
+    <div id="modal-omikuji" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="bg-stone-900 border-2 border-gold rounded-2xl max-w-sm w-full p-6 text-center relative shadow-2xl">
+            <button type="button" id="close-modal-omikuji" class="absolute top-4 right-4 text-stone-400 hover:text-white text-xl cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-2xl font-bold text-gold mb-1 font-serifJP">御神籤 (おみくじ)</h3>
+            <p class="text-xs text-stone-400 mb-6">誠心搖晃籤筒，求取運勢指引</p>
+
+            <div id="omikuji-box" class="w-20 h-40 mx-auto my-4 bg-gradient-to-r from-amber-800 via-amber-700 to-amber-900 border-2 border-gold rounded-t-lg rounded-b-3xl shadow-2xl flex flex-col items-center justify-center">
+                <span class="text-gold font-bold text-lg tracking-widest writing-vertical font-serifJP">神 籤</span>
+            </div>
+
+            <div id="omikuji-result" class="hidden washi-texture p-4 rounded-xl border border-gold text-stone-900 my-4 shadow-inner">
+                <div id="omikuji-rank" class="text-3xl font-black text-vermilion mb-1 font-serifJP">大 吉</div>
+                <div id="omikuji-poem" class="text-xs font-serifJP italic my-2 text-stone-800 border-y border-stone-400 py-1">雲開月出正分明，不須進退問前程。</div>
+                <div id="omikuji-desc" class="text-xs text-stone-700">諸事皆宜，福星高照。持之以恆，必有所成。</div>
+            </div>
+
+            <button type="button" id="btn-draw-omikuji" class="w-full py-2.5 bg-vermilion hover:bg-red-600 text-gold font-bold rounded-xl border border-gold shadow-lg transition cursor-pointer">
+                搖晃籤筒求籤
+            </button>
+        </div>
+    </div>
+
+    <footer class="relative z-20 py-2 text-center text-[10px] text-stone-500 bg-black/90 border-t border-stone-800">
+        <p>© 2026 台南林百貨頂樓神社 參拜連線所 | 誠心祈願 萬事順遂</p>
+    </footer>
+
+    <!-- 本地互動邏輯 -->
+    <script>
+        class ShrineAudio {
+            constructor() { this.ctx = null; this.muted = false; }
+            init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+            playCoinSound() {
+                if (this.muted) return; this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(2400, now);
+                osc.frequency.exponentialRampToValueAtTime(3600, now + 0.05);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(now); osc.stop(now + 0.2);
+            }
+
+            playBellSound() {
+                if (this.muted) return; this.init();
+                const now = this.ctx.currentTime;
+                [280, 560, 1120, 2240].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine'; osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.35 / (i + 1), now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 2.8);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(now); osc.stop(now + 2.8);
+                });
+            }
+
+            playClapSound() {
+                if (this.muted) return; this.init();
+                const now = this.ctx.currentTime;
+                const bufferSize = this.ctx.sampleRate * 0.05;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 1200;
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+                noise.start(now);
+            }
+        }
+
+        const audio = new ShrineAudio();
+        let hasTossedCoin = false;
+        let allEmaList = [];
+        let totalSaisen = 0;
+
+        try {
+            allEmaList = JSON.parse(localStorage.getItem('hayashi_emas') || '[]');
+            totalSaisen = parseInt(localStorage.getItem('hayashi_saisen') || '0', 10);
+        } catch (e) {
+            allEmaList = [];
+            totalSaisen = 0;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateStatsUI();
+            renderEmaGrid();
+            setupParticleCanvas();
+            bindEvents();
+        });
+
+        function updateStatsUI() {
+            const saisenEl = document.getElementById('stat-saisen');
+            const emasEl = document.getElementById('stat-emas-count');
+            if (saisenEl) saisenEl.innerText = totalSaisen;
+            if (emasEl) emasEl.innerText = allEmaList.length;
+        }
+
+        function bindEvents() {
+            const getEl = (id) => document.getElementById(id);
+
+            if (getEl('btn-audio-toggle')) {
+                getEl('btn-audio-toggle').onclick = () => {
+                    audio.muted = !audio.muted;
+                    const icon = getEl('audio-icon');
+                    if (icon) icon.className = audio.muted ? 'fa-solid fa-volume-xmark text-stone-500' : 'fa-solid fa-volume-high text-gold';
+                };
+            }
+
+            if (getEl('coin-5-btn')) getEl('coin-5-btn').onclick = () => tossCoin(5);
+            if (getEl('coin-50-btn')) getEl('coin-50-btn').onclick = () => tossCoin(50);
+            if (getEl('coin-100-btn')) getEl('coin-100-btn').onclick = () => tossCoin(100);
+            if (getEl('coin-500-btn')) getEl('coin-500-btn').onclick = () => tossCoin(500);
+
+            if (getEl('bell-rope-group')) getEl('bell-rope-group').onclick = ringBell;
+            if (getEl('btn-manual-ring')) getEl('btn-manual-ring').onclick = ringBell;
+            if (getEl('btn-start-worship')) getEl('btn-start-worship').onclick = startWorshipProcess;
+
+            if (getEl('btn-open-ema-modal')) {
+                getEl('btn-open-ema-modal').onclick = () => {
+                    getEl('modal-ema').classList.remove('hidden');
+                    updateEmaPreview();
+                };
+            }
+
+            if (getEl('close-modal-ema')) getEl('close-modal-ema').onclick = () => closeModal('modal-ema');
+            if (getEl('close-modal-wall')) getEl('close-modal-wall').onclick = () => closeModal('modal-wall');
+            
+            if (getEl('btn-view-wall')) {
+                getEl('btn-view-wall').onclick = () => {
+                    renderEmaGrid();
+                    getEl('modal-wall').classList.remove('hidden');
+                };
+            }
+
+            if (getEl('ema-category')) getEl('ema-category').onchange = updateEmaPreview;
+            if (getEl('ema-text')) getEl('ema-text').oninput = updateEmaPreview;
+            if (getEl('ema-author')) getEl('ema-author').oninput = updateEmaPreview;
+            if (getEl('btn-submit-ema')) getEl('btn-submit-ema').onclick = submitEmaToLocal;
+
+            if (getEl('btn-omikuji')) {
+                getEl('btn-omikuji').onclick = () => {
+                    getEl('modal-omikuji').classList.remove('hidden');
+                    getEl('omikuji-result').classList.add('hidden');
+                    getEl('btn-draw-omikuji').classList.remove('hidden');
+                };
+            }
+            if (getEl('close-modal-omikuji')) getEl('close-modal-omikuji').onclick = () => closeModal('modal-omikuji');
+            if (getEl('btn-draw-omikuji')) getEl('btn-draw-omikuji').onclick = drawOmikuji;
+        }
+
+        function tossCoin(amount) {
+            audio.playCoinSound();
+            totalSaisen += amount;
+            try {
+                localStorage.setItem('hayashi_saisen', totalSaisen);
+            } catch (e) {}
+            updateStatsUI();
+
+            const container = document.getElementById('coin-fly-container');
+            if (container) {
+                const coin = document.createElement('div');
+                let coinClass = 'coin-5';
+                if (amount === 50) coinClass = 'coin-50';
+                if (amount === 100) coinClass = 'coin-100';
+                if (amount === 500) coinClass = 'coin-500';
+
+                coin.className = `absolute w-12 h-12 coin-3d ${coinClass} animate-toss-coin z-40`;
+                coin.innerText = `${amount}円`;
+                coin.style.setProperty('--tw-toss-x', `${(Math.random() - 0.5) * 50}px`);
+                container.appendChild(coin);
+                setTimeout(() => coin.remove(), 750);
+            }
+
+            hasTossedCoin = true;
+            const bellGroup = document.getElementById('bell-rope-group');
+            if (bellGroup) {
+                bellGroup.classList.remove('bell-locked');
+                bellGroup.classList.add('bell-unlocked');
+            }
+
+            const promptBadge = document.getElementById('bell-prompt-badge');
+            if (promptBadge) promptBadge.classList.remove('hidden');
+
+            setTimeout(() => { updateStepUI(2); }, 750);
+        }
+
+        function ringBell() {
+            if (!hasTossedCoin) return;
+            audio.playBellSound();
+            const group = document.getElementById('bell-rope-group');
+            if (group) {
+                group.classList.remove('shake-heavy');
+                void group.offsetWidth;
+                group.classList.add('shake-heavy');
+            }
+
+            const promptBadge = document.getElementById('bell-prompt-badge');
+            if (promptBadge) promptBadge.classList.add('hidden');
+
+            setTimeout(() => {
+                if (group) group.classList.remove('shake-heavy');
+                updateStepUI(3);
+            }, 1200);
+        }
+
+        function startWorshipProcess() {
+            const btn = document.getElementById('btn-start-worship');
+            if (btn) btn.disabled = true;
+
+            const seq = [
+                { id: 'worship-bow-1', action: () => {}, delay: 300 },
+                { id: 'worship-bow-2', action: () => {}, delay: 700 },
+                { id: 'worship-clap-1', action: () => audio.playClapSound(), delay: 1200 },
+                { id: 'worship-clap-2', action: () => audio.playClapSound(), delay: 1700 },
+                { id: 'worship-bow-3', action: () => {}, delay: 2300 },
+            ];
+
+            seq.forEach(item => {
+                setTimeout(() => {
+                    const el = document.getElementById(item.id);
+                    if (el) {
+                        el.classList.remove('opacity-30');
+                        el.classList.add('opacity-100', 'scale-110');
+                        item.action();
+                        setTimeout(() => el.classList.remove('scale-110'), 200);
+                    }
+                }, item.delay);
+            });
+
+            setTimeout(() => {
+                if (btn) btn.disabled = false;
+                updateStepUI(4);
+            }, 2800);
+        }
+
+        function updateStepUI(step) {
+            for (let i = 1; i <= 4; i++) {
+                const panel = document.getElementById(`panel-step-${i}`);
+                if (panel) panel.classList.add('hidden');
+            }
+            const currentPanel = document.getElementById(`panel-step-${step}`);
+            if (currentPanel) currentPanel.classList.remove('hidden');
+
+            const badgeText = document.getElementById('step-badge-text');
+            const badgeIcon = document.getElementById('step-badge-icon');
+            const title = document.getElementById('step-title');
+            const desc = document.getElementById('step-desc');
+
+            if (step === 1) { 
+                if (badgeIcon) badgeIcon.className = "fa-solid fa-coins";
+                if (badgeText) badgeText.innerText = '步驟 1 / 4：奉納賽錢 (請選擇硬幣投幣)'; 
+                if (title) title.innerText = '投幣賽錢 (賽銭奉納)'; 
+                if (desc) desc.innerText = '參拜第一步：投幣入賽錢箱，即可開啟搖晃本坪神鈴'; 
+            }
+            if (step === 2) { 
+                if (badgeIcon) badgeIcon.className = "fa-solid fa-bell text-gold";
+                if (badgeText) badgeText.innerText = '步驟 2 / 4：神鈴已啟用！請點擊搖響神鈴'; 
+                if (title) title.innerText = '搖晃神鈴 (鈴鳴らし)'; 
+                if (desc) desc.innerText = '賽錢已奉納！請點擊上方神鈴或下方按鈕搖響神鈴'; 
+            }
+            if (step === 3) { 
+                if (badgeIcon) badgeIcon.className = "fa-solid fa-hands-clapping text-gold";
+                if (badgeText) badgeText.innerText = '步驟 3 / 4：進行參拜禮儀'; 
+                if (title) title.innerText = '二禮二拍手一禮 (禮拜)'; 
+                if (desc) desc.innerText = '遵循日式傳統參拜儀式，向神明誠心致敬'; 
+            }
+            if (step === 4) { 
+                if (badgeIcon) badgeIcon.className = "fa-solid fa-pen-nib text-gold";
+                if (badgeText) badgeText.innerText = '步驟 4 / 4：奉納繪馬與求籤'; 
+                if (title) title.innerText = '撰寫心願繪馬 (本地同步)'; 
+                if (desc) desc.innerText = '將心願刻印於繪馬木牌，即時儲存並展示'; 
+            }
+        }
+
+        function updateEmaPreview() {
+            const catEl = document.getElementById('ema-category');
+            const wishEl = document.getElementById('ema-text');
+            const authorEl = document.getElementById('ema-author');
+
+            const cat = catEl ? catEl.value : '🌸 良緣祈願';
+            const wish = (wishEl && wishEl.value) ? wishEl.value : '願平安喜樂，萬事順心。';
+            const author = (authorEl && authorEl.value) ? authorEl.value : '無名氏';
+
+            const pCat = document.getElementById('preview-category');
+            const pWish = document.getElementById('preview-wish');
+            const pAuthor = document.getElementById('preview-author');
+
+            if (pCat) pCat.innerText = cat;
+            if (pWish) pWish.innerText = wish;
+            if (pAuthor) pAuthor.innerText = `奉納者：${author}`;
+        }
+
+        function submitEmaToLocal() {
+            const catEl = document.getElementById('ema-category');
+            const wishEl = document.getElementById('ema-text');
+            const authorEl = document.getElementById('ema-author');
+
+            const cat = catEl ? catEl.value : '🌸 良緣祈願';
+            const wish = (wishEl && wishEl.value) ? wishEl.value : '平安喜樂';
+            const author = (authorEl && authorEl.value) ? authorEl.value : '無名氏';
+            const today = new Date().toISOString().split('T')[0];
+
+            const newEma = {
+                id: 'ema_' + Date.now(),
+                category: cat,
+                wish: wish,
+                author: author,
+                date: today,
+                blessCount: 0,
+                createdAt: Date.now()
+            };
+
+            allEmaList.unshift(newEma);
+            try {
+                localStorage.setItem('hayashi_emas', JSON.stringify(allEmaList));
+            } catch (e) {}
+            updateStatsUI();
+
+            const emaModal = document.getElementById('modal-ema');
+            const wallModal = document.getElementById('modal-wall');
+            if (emaModal) emaModal.classList.add('hidden');
+            renderEmaGrid();
+            if (wallModal) wallModal.classList.remove('hidden');
+        }
+
+        function renderEmaGrid() {
+            const grid = document.getElementById('ema-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            if (allEmaList.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center text-stone-500 py-12 text-sm">尚無祈願，歡迎成為首位奉納繪馬的訪客！</div>`;
+                return;
+            }
+
+            allEmaList.forEach(ema => {
+                const card = document.createElement('div');
+                card.className = "wood-ema ema-shape p-3 h-40 flex flex-col justify-between items-center relative shadow-lg text-amber-950 border-t-2 border-amber-950 transition";
+                
+                card.innerHTML = `
+                    <div class="w-2.5 h-2.5 rounded-full bg-stone-900 absolute top-1 left-1/2 -translate-x-1/2"></div>
+                    <div class="px-2 py-0.5 bg-vermilion text-gold text-[9px] font-bold rounded shadow">${ema.category}</div>
+                    <p class="text-xs font-bold font-serifJP text-center my-auto px-1 line-clamp-2">${ema.wish}</p>
+                    <div class="w-full flex justify-between items-center text-[9px] font-bold border-t border-amber-900/20 pt-1">
+                        <span class="truncate max-w-[70px]">${ema.author}</span>
+                        <button type="button" class="btn-bless-ema bg-vermilion/90 hover:bg-vermilion text-gold px-2 py-0.5 rounded-full text-[9px] shadow transition flex items-center gap-1 cursor-pointer">
+                            <span>🙏 祝福</span>
+                            <span class="bless-num font-bold">${ema.blessCount || 0}</span>
+                        </button>
+                    </div>
+                `;
+
+                const blessBtn = card.querySelector('.btn-bless-ema');
+                blessBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    blessEma(ema.id, blessBtn);
+                };
+
+                grid.appendChild(card);
+            });
+        }
+
+        function blessEma(emaId, btnElement) {
+            audio.playCoinSound();
+            const target = allEmaList.find(item => item.id === emaId);
+            if (target) {
+                target.blessCount = (target.blessCount || 0) + 1;
+                try {
+                    localStorage.setItem('hayashi_emas', JSON.stringify(allEmaList));
+                } catch (e) {}
+                const blessNumSpan = btnElement.querySelector('.bless-num');
+                if (blessNumSpan) blessNumSpan.innerText = target.blessCount;
+            }
+        }
+
+        const fortunes = [
+            { rank: '大 吉', poem: '雲開月出正分明，不須進退問前程。', desc: '諸事皆宜，福星高照。持之以恆，必有所成。' },
+            { rank: '中 吉', poem: '春到園林花草香，風調雨順好風光。', desc: '運勢漸入佳境，貴人相助，腳踏實地即可獲致成功。' },
+            { rank: '小 吉', poem: '水到渠成自然順，莫急莫躁守平常。', desc: '保持平穩心態，細心處理身邊小事，幸福將不期而遇。' },
+            { rank: '吉', poem: '積善之家有餘慶，誠心祈願福自來。', desc: '多行善事，廣結善緣，必能收穫美好回報。' }
+        ];
+
+        function drawOmikuji() {
+            const box = document.getElementById('omikuji-box');
+            const drawBtn = document.getElementById('btn-draw-omikuji');
+            if (drawBtn) drawBtn.classList.add('hidden');
+            audio.playCoinSound();
+
+            if (box) box.classList.add('animate-bounce');
+            setTimeout(() => {
+                if (box) box.classList.remove('animate-bounce');
+                const result = fortunes[Math.floor(Math.random() * fortunes.length)];
+                const rankEl = document.getElementById('omikuji-rank');
+                const poemEl = document.getElementById('omikuji-poem');
+                const descEl = document.getElementById('omikuji-desc');
+                const resEl = document.getElementById('omikuji-result');
+
+                if (rankEl) rankEl.innerText = result.rank;
+                if (poemEl) poemEl.innerText = result.poem;
+                if (descEl) descEl.innerText = result.desc;
+                if (resEl) resEl.classList.remove('hidden');
+            }, 1000);
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function setupParticleCanvas() {
+            const canvas = document.getElementById('sakura-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.onresize = () => { 
+                width = canvas.width = window.innerWidth; 
+                height = canvas.height = window.innerHeight; 
+            };
+
+            class Petal {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * width; this.y = Math.random() * height - height;
+                    this.size = Math.random() * 6 + 4; this.speedY = Math.random() * 1.2 + 0.6;
+                    this.speedX = Math.random() * 0.8 - 0.4; this.opacity = Math.random() * 0.5 + 0.4;
+                }
+                update() {
+                    this.y += this.speedY; this.x += Math.sin(this.y * 0.008) + this.speedX;
+                    if (this.y > height + 20) this.reset();
+                }
+                draw() {
+                    ctx.save(); ctx.translate(this.x, this.y); ctx.globalAlpha = this.opacity;
+                    ctx.fillStyle = '#FFB7C5'; ctx.beginPath();
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+                }
+            }
+
+            const petals = Array.from({ length: 35 }, () => new Petal());
+            function animateSakura() {
+                ctx.clearRect(0, 0, width, height);
+                petals.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(animateSakura);
+            }
+            animateSakura();
+        }
+    </script>
+</body>
+</html>
