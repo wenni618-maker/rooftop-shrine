@@ -399,12 +399,14 @@
                 <div class="flex flex-col items-center">
                     <p class="text-xs text-gold mb-2">繪馬預覽</p>
                     <div id="ema-preview" class="w-64 h-44 wood-ema ema-shape relative p-4 flex flex-col justify-between items-center text-stone-900 shadow-2xl border-t-4 border-amber-950">
-                        <div class="w-3.5 h-3.5 rounded-full bg-stone-900 border border-gold absolute top-2 left-1/2 -translate-x-1/2"></div>
-                        <div class="absolute inset-0 flex items-center justify-center text-black/10 text-7xl pointer-events-none">🌸</div>
-                        <div id="preview-category" class="mt-4 px-2 py-0.5 bg-vermilion text-gold text-[10px] font-bold rounded shadow">🌸 良緣祈願</div>
-                        <div id="preview-wish" class="text-center font-bold text-sm my-auto px-2 break-all text-amber-950 font-serifJP leading-snug">願平安喜樂，萬事順心。</div>
+                        <!-- 花朵裝飾移至最底層且透明度調低 -->
+                        <div class="absolute inset-0 flex items-center justify-center text-black/5 text-7xl pointer-events-none z-0">🌸</div>
+                        
+                        <div class="w-3.5 h-3.5 rounded-full bg-stone-900 border border-gold absolute top-2 left-1/2 -translate-x-1/2 z-10"></div>
+                        <div id="preview-category" class="mt-4 px-2 py-0.5 bg-vermilion text-gold text-[10px] font-bold rounded shadow z-10">🌸 良緣祈願</div>
+                        <div id="preview-wish" class="text-center font-bold text-sm my-auto px-2 break-all text-amber-950 font-serifJP leading-snug z-10">願平安喜樂，萬事順心。</div>
                         <div class="w-full flex justify-between items-end text-[10px] text-amber-950 font-bold z-10">
-                            <span id="preview-author">奉納者：無名氏</span>
+                            <span id="preview-author">奉納者：隱名氏</span>
                             <div class="w-6 h-6 border-2 border-vermilion text-vermilion rounded flex items-center justify-center text-[8px] font-bold">祈願</div>
                         </div>
                     </div>
@@ -427,7 +429,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gold mb-1">奉納者署名</label>
-                        <input id="ema-author" type="text" maxlength="12" placeholder="無名氏" class="w-full bg-stone-800 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-100 focus:outline-none focus:border-gold">
+                        <input id="ema-author" type="text" maxlength="12" placeholder="隱名氏" class="w-full bg-stone-800 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-100 focus:outline-none focus:border-gold">
                     </div>
                     <button type="button" id="btn-submit-ema" class="w-full py-2.5 bg-gradient-to-r from-vermilion to-red-700 text-gold font-bold rounded-xl border border-gold shadow-lg hover:from-red-600 transition cursor-pointer">
                         奉納至祈願牆
@@ -744,7 +746,7 @@
 
             const cat = catEl ? catEl.value : '🌸 良緣祈願';
             const wish = (wishEl && wishEl.value) ? wishEl.value : '願平安喜樂，萬事順心。';
-            const author = (authorEl && authorEl.value) ? authorEl.value : '無名氏';
+            const author = (authorEl && authorEl.value) ? authorEl.value : '隱名氏';
 
             const pCat = document.getElementById('preview-category');
             const pWish = document.getElementById('preview-wish');
@@ -762,7 +764,7 @@
 
             const cat = catEl ? catEl.value : '🌸 良緣祈願';
             const wish = (wishEl && wishEl.value) ? wishEl.value : '平安喜樂';
-            const author = (authorEl && authorEl.value) ? authorEl.value : '無名氏';
+            const author = (authorEl && authorEl.value) ? authorEl.value : '隱名氏';
             const today = new Date().toISOString().split('T')[0];
 
             const newEma = {
