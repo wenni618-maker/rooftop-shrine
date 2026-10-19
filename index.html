@@ -365,7 +365,7 @@
 
                     <div id="panel-step-3" class="hidden w-full text-center">
                         <div class="p-3 bg-black/70 rounded-xl border border-gold/30 mb-3 flex justify-around items-center">
-                            <div id="worship-bow-1" class="opacity-30 transition-all flex flex-col items-center"><span class="text-xl">🙇‍♂</span><span class="text-[10px] text-gold">一禮</span></div>
+                            <div id="worship-bow-1" class="opacity-30 transition-all flex flex-col items-center"><span class="text-xl">🙇‍♂️</span><span class="text-[10px] text-gold">一禮</span></div>
                             <div id="worship-bow-2" class="opacity-30 transition-all flex flex-col items-center"><span class="text-xl">🙇‍♂️</span><span class="text-[10px] text-gold">二禮</span></div>
                             <div id="worship-clap-1" class="opacity-30 transition-all flex flex-col items-center"><span class="text-xl">👏</span><span class="text-[10px] text-gold">一拍手</span></div>
                             <div id="worship-clap-2" class="opacity-30 transition-all flex flex-col items-center"><span class="text-xl">👏</span><span class="text-[10px] text-gold">二拍手</span></div>
@@ -393,7 +393,7 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <h3 class="text-2xl font-bold text-gold text-center mb-1 font-serifJP">奉納心願繪馬</h3>
-            <p class="text-xs text-stone-400 text-center mb-6">您的祈願將即時展示，所有人均可為您點讚打氣</p>
+            <p class="text-xs text-stone-400 text-center mb-6">您的祈願將即時上傳至雲端繪馬牆，所有人均可為您點讚打氣</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                 <div class="flex flex-col items-center">
@@ -428,8 +428,8 @@
                         <label class="block text-xs font-semibold text-gold mb-1">奉納者署名</label>
                         <input id="ema-author" type="text" maxlength="12" placeholder="隱名氏" class="w-full bg-stone-800 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-100 focus:outline-none focus:border-gold">
                     </div>
-                    <button type="button" id="btn-submit-ema" class="w-full py-2.5 bg-gradient-to-r from-vermilion to-red-700 text-gold font-bold rounded-xl border border-gold shadow-lg hover:from-red-600 transition cursor-pointer">
-                        奉納至祈願牆
+                    <button type="button" id="btn-submit-ema" class="w-full py-2.5 bg-gradient-to-r from-vermilion to-red-700 text-gold font-bold rounded-xl border border-gold shadow-lg hover:from-red-600 transition cursor-pointer flex items-center justify-center gap-2">
+                        <span id="submit-text">奉納至雲端繪馬牆</span>
                     </button>
                 </div>
             </div>
@@ -443,8 +443,8 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <div class="text-center mb-3">
-                <h3 class="text-2xl font-bold text-gold font-serifJP">祈願繪馬牆</h3>
-                <p class="text-xs text-stone-400">所有心願已保存，您可以點擊「🙏 祝福」幫忙打氣！</p>
+                <h3 class="text-2xl font-bold text-gold font-serifJP">雲端共享祈願牆</h3>
+                <p class="text-xs text-stone-400">所有心願即時連線儲存，您可以點擊「🙏 祝福」幫忙打氣！</p>
             </div>
 
             <div id="ema-grid" class="flex-1 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2 no-scrollbar">
@@ -484,6 +484,8 @@
 
     <!-- 互動邏輯 -->
     <script>
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqTz48efUtxPUgiTkaRFxnNqAUWo7WzblJzVvcp2ZpB43-xpLsowSFSibgWIHVtYEE/exec";
+
         class ShrineAudio {
             constructor() { this.ctx = null; this.muted = false; }
             init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -537,20 +539,26 @@
         let allEmaList = [];
         let totalSaisen = 0;
 
-        try {
-            allEmaList = JSON.parse(localStorage.getItem('hayashi_emas') || '[]');
-            totalSaisen = parseInt(localStorage.getItem('hayashi_saisen') || '0', 10);
-        } catch (e) {
-            allEmaList = [];
-            totalSaisen = 0;
-        }
-
         window.addEventListener('DOMContentLoaded', () => {
-            updateStatsUI();
-            renderEmaGrid();
+            fetchCloudData();
             setupParticleCanvas();
             bindEvents();
         });
+
+        async function fetchCloudData() {
+            try {
+                const res = await fetch(GAS_WEB_APP_URL);
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    allEmaList = data;
+                }
+            } catch (err) {
+                console.error("無法連線至雲端試算表：", err);
+            } finally {
+                updateStatsUI();
+                renderEmaGrid();
+            }
+        }
 
         function updateStatsUI() {
             const saisenEl = document.getElementById('stat-saisen');
@@ -599,7 +607,7 @@
             if (getEl('ema-category')) getEl('ema-category').onchange = updateEmaPreview;
             if (getEl('ema-text')) getEl('ema-text').oninput = updateEmaPreview;
             if (getEl('ema-author')) getEl('ema-author').oninput = updateEmaPreview;
-            if (getEl('btn-submit-ema')) getEl('btn-submit-ema').onclick = submitEmaToLocal;
+            if (getEl('btn-submit-ema')) getEl('btn-submit-ema').onclick = submitEmaToCloud;
 
             if (getEl('btn-omikuji')) {
                 getEl('btn-omikuji').onclick = () => {
@@ -615,9 +623,6 @@
         function tossCoin(amount) {
             audio.playCoinSound();
             totalSaisen += amount;
-            try {
-                localStorage.setItem('hayashi_saisen', totalSaisen);
-            } catch (e) {}
             updateStatsUI();
 
             const container = document.getElementById('coin-fly-container');
@@ -754,7 +759,10 @@
             if (pAuthor) pAuthor.innerText = `奉納者：${author}`;
         }
 
-        function submitEmaToLocal() {
+        async function submitEmaToCloud() {
+            const btn = document.getElementById('btn-submit-ema');
+            const btnText = document.getElementById('submit-text');
+
             const catEl = document.getElementById('ema-category');
             const wishEl = document.getElementById('ema-text');
             const authorEl = document.getElementById('ema-author');
@@ -762,29 +770,41 @@
             const cat = catEl ? catEl.value : '🌸 良緣祈願';
             const wish = (wishEl && wishEl.value) ? wishEl.value : '平安喜樂';
             const author = (authorEl && authorEl.value) ? authorEl.value : '隱名氏';
-            const today = new Date().toISOString().split('T')[0];
 
             const newEma = {
+                action: 'add',
                 id: 'ema_' + Date.now(),
                 category: cat,
                 wish: wish,
                 author: author,
-                date: today,
-                blessCount: 0,
-                createdAt: Date.now()
+                blessCount: 0
             };
 
-            allEmaList.unshift(newEma);
-            try {
-                localStorage.setItem('hayashi_emas', JSON.stringify(allEmaList));
-            } catch (e) {}
-            updateStatsUI();
+            if (btn) btn.disabled = true;
+            if (btnText) btnText.innerText = '正在同步至雲端...';
 
-            const emaModal = document.getElementById('modal-ema');
-            const wallModal = document.getElementById('modal-wall');
-            if (emaModal) emaModal.classList.add('hidden');
-            renderEmaGrid();
-            if (wallModal) wallModal.classList.remove('hidden');
+            try {
+                await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newEma)
+                });
+            } catch (err) {
+                console.error("提交繪馬失敗：", err);
+            }
+
+            setTimeout(async () => {
+                if (btn) btn.disabled = false;
+                if (btnText) btnText.innerText = '奉納至雲端繪馬牆';
+
+                const emaModal = document.getElementById('modal-ema');
+                const wallModal = document.getElementById('modal-wall');
+                if (emaModal) emaModal.classList.add('hidden');
+
+                await fetchCloudData();
+                if (wallModal) wallModal.classList.remove('hidden');
+            }, 1000);
         }
 
         function renderEmaGrid() {
@@ -817,23 +837,31 @@
                 const blessBtn = card.querySelector('.btn-bless-ema');
                 blessBtn.onclick = (e) => {
                     e.stopPropagation();
-                    blessEma(ema.id, blessBtn);
+                    blessEmaInCloud(ema.id, blessBtn);
                 };
 
                 grid.appendChild(card);
             });
         }
 
-        function blessEma(emaId, btnElement) {
+        async function blessEmaInCloud(emaId, btnElement) {
             audio.playCoinSound();
             const target = allEmaList.find(item => item.id === emaId);
             if (target) {
                 target.blessCount = (target.blessCount || 0) + 1;
-                try {
-                    localStorage.setItem('hayashi_emas', JSON.stringify(allEmaList));
-                } catch (e) {}
                 const blessNumSpan = btnElement.querySelector('.bless-num');
                 if (blessNumSpan) blessNumSpan.innerText = target.blessCount;
+
+                try {
+                    await fetch(GAS_WEB_APP_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'bless', id: emaId })
+                    });
+                } catch (err) {
+                    console.error("祝福同步失敗：", err);
+                }
             }
         }
 
