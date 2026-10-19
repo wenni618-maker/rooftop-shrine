@@ -832,7 +832,7 @@
             document.getElementById('preview-author').innerText = `奉納者：${author}`;
         }
 
-        // 提交繪馬至 Firebase
+        // 提交繪馬至 Firebase (已加入自動跳轉祈願牆邏輯)
         async function submitEmaToCloud() {
             const cat = document.getElementById('ema-category').value;
             const wish = document.getElementById('ema-text').value || '平安喜樂';
@@ -849,8 +849,13 @@
                 createdAt: Date.now()
             });
 
+            // 1. 關閉撰寫繪馬的視窗
             closeModal('modal-ema');
+            
+            // 2. 重新整理繪馬牆格子的資料
             renderEmaGrid();
+            
+            // 3. 自動開啟「全球網友祈願繪馬牆」視窗，實現平順跳轉
             document.getElementById('modal-wall').classList.remove('hidden');
         }
 
